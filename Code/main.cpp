@@ -12,10 +12,7 @@ int32_t main(int argc, char **argv)
     // Agregado
     int populationSize = strtol(argv[3], NULL, 10);
     int numberGenerations = strtol(argv[4], NULL, 10);
-    // vector <int> bNumberSave;
-    vector<int> bsequence;
-
-    // for (int i = 0; i < 30; i++){
+    vector<int> optSolution;
 
     Solver G1(fileName, b, populationSize, numberGenerations);
 
@@ -33,44 +30,35 @@ int32_t main(int argc, char **argv)
         cout << node << " ";
     cout << endl;
 
-    int temp; // Variable para almacenar el ultimo valor que se quito del vector solution
     Checker checkG1(fileName);
     if (checkG1.check(solution, 1))
     { // Si la solucion larga es valida
         cout << BOLD(FGRN("Verified!")) << endl;
-        for (int i = solution.size() - 1; i >= 0; i--)
+        for (int i = 0; i <solution.size(); i++)
         {
-            temp = solution.back(); // Guardamos el ultimo valor del vector solution, se guarda en temp
-            solution.pop_back();    // Eliminamos el ultimo valor del vector solution
-
-            if (!checkG1.check(solution, 1))
-            {                             // Si vector solution no tiene una secuencia valida
-                solution.push_back(temp); // Se le agrega el ultimo valor que se habia quitado para tener el vector solution optimo
-                break;                    // Rompemos el ciclo for ya que se ha encontrado la solucion optima
+            optSolution.push_back(solution[i]);
+            if (checkG1.check(optSolution, 0))
+            {      
+                //cout << BOLD(FGRN("Verified!")) << endl;
+                break;
             }
         }
         // Imprimimos la secuencia de quemado y el burning number
         cout << "Burning sequence:" << "\n";
-        for (auto number : solution)
+        for (auto number : optSolution)
         {
-            if (number != 0)
-            {
-                bsequence.push_back(number);
-                cout << number << " ";
-            }
+            cout << number << " ";  
         }
         cout << "\n"
-             << "Burning number:" << "\n";
-        // bNumberSave.push_back(solution.size());
-        // cout<<solution.size()<<"\n";
-        cout << bsequence.size() << "\n";
+        << "Burning number:" << "\n";
+        cout << optSolution.size() << "\n";
     }
     else
     {
         cout << BOLD(FRED("NOT Verified!")) << endl;
     }
 
-    //}
+    
 
     /*//Guardar valores en un archivo
     ofstream archivo("Dimension30.txt");
@@ -90,8 +78,8 @@ int32_t main(int argc, char **argv)
         cout << "No se pudo abrir el archivo." << endl;
     }*/
 
-    // vector<int> tempo = {99, 198, 1, 142, 93, 59, 176, 145};
-    /*if (checkG1.check(tempo, 1)){
+    /*vector<int> tempo = {6930, 3494, 4546, 3271, 2215, 2215};
+    if (checkG1.check(tempo, 1)){
         cout << BOLD(FGRN("Verified! ")) << endl;
 
     }else{

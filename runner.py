@@ -34,7 +34,7 @@ for i in range(30):
     dir_genetic = "/mnt/c/Users/Gabriela Alva/OneDrive - Instituto Tecnológico Superior de Purísima del Rincón/Documents/Tesis/repos/CBAG"
     ruta_genetic = os.path.join(dir_genetic, "CBAG")
     instance = "government.csv"
-    popSize = "30"
+    popSize = "100"
     genNumb = "0"
 
     # Ejecutar el programa compilado
@@ -53,9 +53,9 @@ for i in range(30):
 
         print(output_genetic[3]) #Linea de tiempo de ejecucion
         #Agregar condicion que imprima cuando sea verified
-        print(output_genetic[10]) #Linea de burning sequence
-        print(output_genetic[12]) #Linea de burning number
-        bNumberList.append(output_genetic[12])
+        print(output_genetic[9]) #Linea de burning sequence
+        print(output_genetic[11]) #Linea de burning number
+        bNumberList.append(output_genetic[11])
 
         #secuenciaList = []
         """for i in range(len(secuenciaDividida)-1):
@@ -67,7 +67,7 @@ for i in range(30):
                 print(secuenciaDividida[i])
                 #secuenciaList.append(secuenciaDividida(i))"""
 
-with open('Dimension 30.txt', 'w') as file:
+with open('Dimension 50.txt', 'w') as file:
     for i in range(len(bNumberList)):
         # Escribir valores en el archivo
         file.write(f"{bNumberList[i] }")
