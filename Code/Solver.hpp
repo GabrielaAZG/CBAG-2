@@ -12,6 +12,10 @@ class Solver {
     private:
         int nodes, edges;
         int burninglength;
+        //Agregado
+        int populationSize;
+        int generationsNumber;
+        //
         double sigmoidCenrtalitySum;
         vector<int> nodeMark;
         vector<int> nodeFillMark;
@@ -41,9 +45,11 @@ class Solver {
         vector<int> crossover(vector<int> parentChromosome1, vector<int> parentChromosome2);
         vector<int> mutate(vector<int> chromosome, double mutateProbabilty);
     public:
-        Solver(string fileName, int burninglength, int sampleSize = 1000, int verbose = 0);
+        
+        Solver(string fileName, int burninglength, int populationSize, int numberGenerations, int sampleSize = 1000, int verbose = 0);
+        //Modificado
         vector<int> solve(int chromosomeSize = -1, int minimumDistance = -1, 
-                          int skipValue = 20, int maxGenerations = 500, int topPopulation = 300,
+                          int skipValue = 20, int maxGenerations = -1, int topPopulation = -1,
                           int crossoverPopulation = 500, double mutateProbabilty = 0.1, 
                           double alpha = 0.05, double beta = 200);
 };

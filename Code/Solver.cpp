@@ -1,8 +1,12 @@
 #include "Solver.hpp"
 
-Solver::Solver(string fileName, int burninglength, int sample_size, int verbose) {
+Solver::Solver(string fileName, int burninglength, int populationSize, int generationsNumber, int sample_size, int verbose) {
     this->burninglength = burninglength;
     this->readGraph(fileName);
+    //Agregado
+    this->populationSize = populationSize;
+    this->generationsNumber = generationsNumber;
+    //
     this->calculateMiddleNodes((verbose & (1 << 0)));
     this->findComponents();
     this->betweennessCentrality(fileName, sample_size, (verbose & (1 << 1)));
@@ -370,6 +374,9 @@ vector<int> Solver::mutate(vector<int> chromosome, double mutateProbabilty) {
 }
 
 int Solver::rouletteWheelSelection(int generation, int topPopulation, double fitnessSum) {
+    //Agregado
+    topPopulation = this->populationSize;
+    //
     double maxWeight = 1.0 / ((double) population[generation][0].first + 1);
     mt19937 generator(randomDevice());
     uniform_int_distribution<> chromosomeSelector(0, population[generation].size() - 1);
@@ -387,6 +394,13 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
                           int skipValue, int maxGenerations, int topPopulation,
                           int crossoverPopulation, double mutateProbabilty,
                           double alpha, double beta) {
+    
+    //Agregado
+    topPopulation = this->populationSize;
+    maxGenerations = this->generationsNumber;
+    //cout<<"Poblacion size "<<topPopulation;
+    //cout<<"Generaciones number "<<maxGenerations;
+
     if (chromosomeSize == -1)
         chromosomeSize = burninglength - 3;
 
@@ -415,6 +429,8 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
         sort(population[generation].begin(), population[generation].end());
         population[generation].erase(unique(population[generation].begin(), population[generation].end()), population[generation].end());
         
+        //cout<<"Generation: "<<generation<<endl;
+
         if (population[generation][0].first == 0)
             return bestBurningSequence;
 
@@ -436,7 +452,6 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
         for (int i = 0; i < 10; i++)
             cout << population[generation][i].first << " ";
         cout << endl;
-
         for (int i = 0; i < topPopulation; i++)
             population[generation + 1].push_back(population[generation][i]);
         
@@ -457,5 +472,6 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
             population[generation + 1].push_back({fitness, chromosome});
         }
     }
+    
     return bestBurningSequence;
 }

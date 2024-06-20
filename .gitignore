@@ -7,3 +7,5 @@
 *.a
 *.o
 CBAG
+
+.idea/
