@@ -1,10 +1,21 @@
 import subprocess
 import os
+import math
 
 bNumberList = []
 
+with open('/mnt/c/Users/Gabriela Alva/OneDrive - Instituto Tecnológico Superior de Purísima del Rincón/Documents/Tesis/repos/CBAG/Data/government.csv', 'r') as file:
+        # Lee todas las líneas del archivo
+        lines = file.readlines()
+    
+    
+second_line = lines[1].strip()
+values = second_line.split()
+bNumber = int(math.sqrt(int(values[0])))
+print("Burn N: "+str(bNumber))
+
 for i in range(30):
-    #OBTENEMOS BURNING NUMBER DEL BFF
+    '''#OBTENEMOS BURNING NUMBER DEL BFF
 
     bNumber = ""
 
@@ -27,18 +38,19 @@ for i in range(30):
         #print(ejecucion.stdout)
         output_bff = ejecucion.stdout.splitlines() 
         bNumber = output_bff[3] #En la cuarta línea del output se encuentra el burning number
-        print("Burning Number: "+bNumber)
+        print("Burning Number: "+bNumber)'''
+    
 
     #EJECUTAMOS GENETIC CON BNUMBER DE BFF
 
     dir_genetic = "/mnt/c/Users/Gabriela Alva/OneDrive - Instituto Tecnológico Superior de Purísima del Rincón/Documents/Tesis/repos/CBAG"
     ruta_genetic = os.path.join(dir_genetic, "CBAG")
     instance = "government.csv"
-    popSize = "100"
+    popSize = "50"
     genNumb = "0"
 
     # Ejecutar el programa compilado
-    ejecucion2 = subprocess.run([ruta_genetic, instance, bNumber, popSize, genNumb], capture_output=True, text=True, cwd=dir_genetic)
+    ejecucion2 = subprocess.run([ruta_genetic, instance, str(bNumber), popSize, genNumb], capture_output=True, text=True, cwd=dir_genetic)
 
     # Verificar si la ejecución fue exitosa
     if ejecucion2.returncode != 0:
@@ -70,7 +82,7 @@ for i in range(30):
 with open('Dimension 50.txt', 'w') as file:
     for i in range(len(bNumberList)):
         # Escribir valores en el archivo
-        file.write(f"{bNumberList[i] }")
+        file.write(f"{bNumberList[i]} ")
     
         
 
