@@ -8,7 +8,7 @@ Checker::Checker(string fileName)
 void Checker::readGraph(string graphFileName)
 {
     graphFileName = "./Data/" + graphFileName;
-    cout << graphFileName << endl;
+    //cout << graphFileName << endl;
     ifstream graphFile(graphFileName);
 
     string graphName;
@@ -52,7 +52,7 @@ void Checker::readGraph(string graphFileName)
         adjList[u].push_back(v);
         adjList[v].push_back(u);
     }
-    cout << graphName << " " << nodes << " " << edges << endl;
+    //cout << graphName << " " << nodes << " " << edges << endl;
 }
 
 bool Checker::check(vector<int> solution, int verbose)
