@@ -1,4 +1,5 @@
 #include "Solver.hpp"
+#include "Checker.hpp"
 
 Solver::Solver(string fileName, int burninglength, int populationSize, int generationsNumber, int sample_size, int verbose) {
     this->burninglength = burninglength;
@@ -400,6 +401,7 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
     maxGenerations = this->generationsNumber;
     //cout<<"Poblacion size "<<topPopulation;
     //cout<<"Generaciones number "<<maxGenerations;
+    
 
     if (chromosomeSize == -1)
         chromosomeSize = burninglength - 3;
@@ -420,11 +422,64 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
         vector<int> chromosome = generateChromosome(chromosomeSize, minimumDistance);
         int fitness = costFunction(chromosome, skipValue);
         population[0].push_back({fitness, chromosome});
-        if (fitness == 0)
-            break;
+        // if (fitness == 0)
+        //     break;
     }
     cout << endl;
 
+
+    // Aqui se termina la creacion de la poblacion, generacion 0
+    //AQUI ES PARA IMPRIMIR TAMANO DE LA POBLACION, E IMPRIMIR FITNESS Y CROMOSOMA DE CADA INDIVIDUO DE LA POBLACION
+    /*cout<<"Tamano de la poblacion: ";
+    cout<<population[0].size()<<endl;
+
+    vector<pair<int, vector<int>>> P1 = population[0];
+    vector <int> BNrecolectados;
+        for (auto individuo : P1) {
+            int primerValor = individuo.first;
+            const vector<int> cromosoma = individuo.second;
+
+            cout << "Fitness: " << primerValor << "\n cromosoma: ";
+            for (size_t i = 0; i < cromosoma.size(); ++i) {
+                cout << cromosoma[i]<<" ";
+                
+            }
+            cout << endl;
+    }*/
+
+    vector <int> BNrecolectados;
+    /*Para checar los burning sequence de los individuos es valido*/
+    for (int i = 0; i < population[0].size(); i++)
+    {
+        vector <int> cromosomaIndi = population[0][i].second; //Vector donde se guarda el cromosoma de cada individuo
+        vector <int>optimaSolution; //Vector donde se guarda la secuencia optima de cada individup
+        Checker checar("crocodile.csv"); 
+
+        if (checar.check(cromosomaIndi, 0)){ //Si el burning sequence del individuo es valido
+            //cout << "valido" << endl;//Se imprime que si es valido
+            //Vemos cual es el burning number del individuo
+            for (int i = 0; i <cromosomaIndi.size(); i++)
+            {
+                optimaSolution.push_back(cromosomaIndi[i]);
+                if (checar.check(optimaSolution, 0))
+                {      
+                    //cout << BOLD(FGRN("Verified!")) << endl;
+                    break;
+                }
+            }
+            BNrecolectados.push_back(optimaSolution.size());
+
+        }else{//Si el burning sequence del individuo no es valido
+            //cout << "no valido" << endl;
+        }  
+    }
+
+    //Imprimimos los burning number recolectados de esa poblacion
+    cout<<"Population burning numbers:\n";
+    for (auto bn :BNrecolectados){
+        cout<<bn<<" ";
+    }
+    
     for (int generation = 0; generation < maxGenerations; generation++) {
         sort(population[generation].begin(), population[generation].end());
         population[generation].erase(unique(population[generation].begin(), population[generation].end()), population[generation].end());
@@ -452,6 +507,8 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
         for (int i = 0; i < 10; i++)
             cout << population[generation][i].first << " ";
         cout << endl;
+
+ 
         for (int i = 0; i < topPopulation; i++)
             population[generation + 1].push_back(population[generation][i]);
         
@@ -471,7 +528,9 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
             int fitness = costFunction(chromosome, skipValue);
             population[generation + 1].push_back({fitness, chromosome});
         }
+  
     }
     
+
     return bestBurningSequence;
 }
