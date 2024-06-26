@@ -4,18 +4,19 @@ import math
 
 bNumberList = []
 
+#Abrimos el archivo (instancia-x) para leer todas las lineas del archivo
 with open('/mnt/c/Users/Gabriela Alva/OneDrive - Instituto Tecnológico Superior de Purísima del Rincón/Documents/Tesis/repos/CBAG/Data/government.csv', 'r') as file:
         # Lee todas las líneas del archivo
-        lines = file.readlines()
-    
-    
-second_line = lines[1].strip()
-values = second_line.split()
-bNumber = int(math.sqrt(int(values[0])))
+        lineas_archivo = file.readlines()
+
+#Obtenemos el numeros de nodos de la instancia-x para calcular el Burning Number   
+segunda_linea = lineas_archivo[1].strip()
+valores = segunda_linea.split()
+bNumber = int(math.sqrt(int(valores[0])))
 print("Burn N: "+str(bNumber))
 
-for i in range(30):
-    '''#OBTENEMOS BURNING NUMBER DEL BFF
+'''for i in range(30): 
+    #OBTENEMOS BURNING NUMBER DEL BFF
 
     bNumber = ""
 
@@ -41,45 +42,47 @@ for i in range(30):
         print("Burning Number: "+bNumber)'''
     
 
-    #EJECUTAMOS GENETIC CON BNUMBER DE BFF
+#EJECUTAMOS GENETIC CON BNUMBER DE BFF
 
-    dir_genetic = "/mnt/c/Users/Gabriela Alva/OneDrive - Instituto Tecnológico Superior de Purísima del Rincón/Documents/Tesis/repos/CBAG"
-    ruta_genetic = os.path.join(dir_genetic, "CBAG")
-    instance = "government.csv"
-    popSize = "50"
-    genNumb = "0"
+dir_genetic = "/mnt/c/Users/Gabriela Alva/OneDrive - Instituto Tecnológico Superior de Purísima del Rincón/Documents/Tesis/repos/CBAG"
+ruta_genetic = os.path.join(dir_genetic, "CBAG")
+instance = "crocodile.csv"
+popSize = "50"
+genNumb = "0"
+indices = []
 
-    # Ejecutar el programa compilado
-    ejecucion2 = subprocess.run([ruta_genetic, instance, str(bNumber), popSize, genNumb], capture_output=True, text=True, cwd=dir_genetic)
+# Ejecutar el programa compilado
+ejecucion2 = subprocess.run([ruta_genetic, instance, str(bNumber), popSize, genNumb], capture_output=True, text=True, cwd=dir_genetic)
 
-    # Verificar si la ejecución fue exitosa
-    if ejecucion2.returncode != 0:
-        print("Error en la ejecución de Genetic:")
-        print(ejecucion2.stderr)
-    else:
-        print("Salida del programa Genetic:")
-        #print(ejecucion2.stdout)
-        output_genetic = ejecucion2.stdout.splitlines()
-        #secuencia = output_genetic[3] #secuencia es un String
-        #secuenciaDividida = secuencia.split() #secuenciaDividida lista de subcadenas
+# Verificar si la ejecución fue exitosa
+if ejecucion2.returncode != 0:
+    print("Error en la ejecución de Genetic:")
+    print(ejecucion2.stderr)
+else:
+    for indice, contenido_linea in enumerate (ejecucion2.stdout.splitlines(), 0): #Para saber en que lineas del archivo se encuentra lo que se quiere imprimir
+         if ("Population burning numbers:" in contenido_linea or "Execution time:" in contenido_linea or "Burning sequence:" in contenido_linea or "Burning number:" in contenido_linea):
+              indices.append(indice)
+                       
+    print("Salida del programa Genetic:")
+    output_genetic = ejecucion2.stdout.splitlines()
 
-        print(output_genetic[3]) #Linea de tiempo de ejecucion
-        #Agregar condicion que imprima cuando sea verified
-        print(output_genetic[9]) #Linea de burning sequence
-        print(output_genetic[11]) #Linea de burning number
-        bNumberList.append(output_genetic[11])
+    print(output_genetic[indices[0]])#Para imprimir population burning numbers
+    for i in range(indices[0]+1, indices[1]):
+         linea_burningNumbers = output_genetic[i].split()
+         linea_burningNumbers = [int(num) for num in linea_burningNumbers]
+         bNumberList.extend(linea_burningNumbers)
+         print(output_genetic[i])
 
-        #secuenciaList = []
-        """for i in range(len(secuenciaDividida)-1):
-            if(secuenciaDividida[i] == secuenciaDividida[i+1]):
-                print(secuenciaDividida[i])
-                #secuenciaList.append(secuenciaDividida(i))
-                break
-            else:
-                print(secuenciaDividida[i])
-                #secuenciaList.append(secuenciaDividida(i))"""
+    print(output_genetic[indices[1]])#Para imprimir execution time
+    print(output_genetic[indices[1]+1])
+    print(output_genetic[indices[2]]) #Para imprimir burning sequence
+    print(output_genetic[indices[2]+1])
+    print(output_genetic[indices[3]]) #Para imprimir burning number
+    print(output_genetic[indices[3]+1])
+    
+    
 
-with open('Dimension 50.txt', 'w') as file:
+with open('crocodile.txt', 'w') as file:
     for i in range(len(bNumberList)):
         # Escribir valores en el archivo
         file.write(f"{bNumberList[i]} ")
