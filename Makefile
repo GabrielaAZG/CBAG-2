@@ -1,5 +1,5 @@
 # Boost library
-BOOST = Path_To_Your_Boost_Here # Change to your Boost library
+BOOST = "C:\Program Files\Boost\boost_1_82_0\boost_1_82_0" # Change to your Boost library
 
 # C++ compiler
 CXX = g++-11 # Change to your C++ compiler

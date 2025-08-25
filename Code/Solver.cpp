@@ -1,5 +1,7 @@
 #include "Solver.hpp"
 #include "Checker.hpp"
+#include <numeric> //Para accumulate
+#include <cmath> //Para raiz cuadrada, potencia al cuadrado
 
 Solver::Solver(string fileName, int burninglength, int populationSize, int generationsNumber, int sample_size, int verbose) {
     this->burninglength = burninglength;
@@ -7,7 +9,8 @@ Solver::Solver(string fileName, int burninglength, int populationSize, int gener
     //Agregado
     this->populationSize = populationSize;
     this->generationsNumber = generationsNumber;
-    //
+    this->Dataset = fileName;
+    //---------
     this->calculateMiddleNodes((verbose & (1 << 0)));
     this->findComponents();
     this->betweennessCentrality(fileName, sample_size, (verbose & (1 << 1)));
@@ -377,7 +380,7 @@ vector<int> Solver::mutate(vector<int> chromosome, double mutateProbabilty) {
 int Solver::rouletteWheelSelection(int generation, int topPopulation, double fitnessSum) {
     //Agregado
     topPopulation = this->populationSize;
-    //
+    //--------
     double maxWeight = 1.0 / ((double) population[generation][0].first + 1);
     mt19937 generator(randomDevice());
     uniform_int_distribution<> chromosomeSelector(0, population[generation].size() - 1);
@@ -391,7 +394,102 @@ int Solver::rouletteWheelSelection(int generation, int topPopulation, double fit
     }
 }
 
-vector<int> Solver::solve(int chromosomeSize, int minimumDistance, 
+//Agregado el metodo de LevenshteinDistance
+int Solver::LevenshteinDistance(vector <int> pal1, vector <int> pal2) {
+    //Inicializamos la matriz en 0
+    vector<vector<int>> matriz(pal2.size()+1,vector<int>(pal1.size()+1,0));
+
+    //Inicializamos los valores de la primera fila
+    for (int i = 0; i < pal1.size()+1; ++i) {
+        matriz[0][i]=i;
+    }
+
+    //Inicializamos los valores de la primera columna
+    for (int j = 0; j < pal2.size()+1; ++j) {
+        matriz[j][0]=j;
+    }
+
+    for (int i = 1; i < matriz.size(); ++i) {
+        for (int j = 1; j < matriz[0].size(); ++j) {
+            //Se verifica primero si las letras de esa posición hacen MATCH
+            if(pal1[j-1]==pal2[i-1]){//Si hacen MATCH
+                matriz[i][j]=matriz[i-1][j-1]; //Se toma el valor de la esquina tal cual
+            }else{//Si no hacen MATCH
+                matriz[i][j]= min({matriz[i][j-1], matriz[i-1][j-1], matriz[i-1][j]})+1; //Se toma el valor mínimo de las casillas de alrededor , y se le suma 1
+            }
+        }
+    }
+    return matriz[matriz.size()-1][matriz[0].size()-1]; //Se regresa el valor que se tiene en la posición de la última fila y columna
+}
+
+//Agregado el metodo donde se obtienen los burning number, imprimen, se calculan distancias levenshtein, promedio de distancias y desviacion estandar
+void Solver::getBurningNumbers(string dataset, int generation) {
+    vector <int> BNrecolectados;
+    vector <vector<int>> OptSequences;
+    //Para checar los burning sequence de los individuos es valido
+    for (int i = 0; i < population[generation].size(); i++)
+    {
+        vector <int> cromosomaIndi = population[generation][i].second; //Vector donde se guarda el cromosoma de cada individuo
+        vector <int> optimaSolution; //Vector donde se guarda la secuencia optima de cada individuo
+        Checker checar(dataset); 
+
+        if (checar.check(cromosomaIndi, 0)){ //Si el burning sequence del individuo es valido
+            //cout << "valido" << endl;//Se imprime que si es valido
+            //Vemos cual es el burning number del individuo
+            for (int i = 0; i <cromosomaIndi.size(); i++)
+            {
+                optimaSolution.push_back(cromosomaIndi[i]);
+                if (checar.check(optimaSolution, 0))
+                {      
+                    //cout << BOLD(FGRN("Verified!")) << endl;
+                    break;
+                }
+            }
+            OptSequences.push_back(optimaSolution);
+            BNrecolectados.push_back(optimaSolution.size());//El tamaño de la burning sequence optima, agregamos el BN al vector
+
+
+        }else{//Si el burning sequence del individuo no es valido
+            //cout << "no valido" << endl;
+        }  
+    }
+
+    
+    //IMPRIMIMOS LOS BURNING NUMBERS RECOLECTADOS DE ESA POBLACION
+    cout<<"Population burning numbers:\n";
+    for (auto bn :BNrecolectados){
+        cout<<bn<<" ";
+    }
+
+    
+    //DISTANCIA DE LEVENSHTEIN CON SECUENCIAS OPTIMAS DE LOS INDIVIDUOS DE LA GENERACION 0
+    vector<int> Distancias;
+    cout<<"\nLevenshtein Distances:\n";
+    for(int i=0; i<OptSequences.size()-1; i++){
+        for(int j=i+1; j<OptSequences.size() ; j++){
+            int resultLevensh = LevenshteinDistance(OptSequences[i], OptSequences[j]);
+            cout<<resultLevensh<<" ";
+            Distancias.push_back(resultLevensh);
+        }
+    }
+
+    //CALCULAMOS EL PROMEDIO DE LAS DISTANCIAS DE LEVENSHTEIN
+    double Promedio = (accumulate(Distancias.begin(),Distancias.end(),0))/(double)Distancias.size();
+
+    cout<<"\nAverage: "<<Promedio<<"\n";
+
+    double desviacionE, suma = 0;
+    //CALCULAMOS LA DESVIACION ESTANDAR DE LAS DISTANCIAS DE LEVENSHTEIN
+    for(int i=0; i<Distancias.size();i++){
+        suma =  suma +  pow((double(Distancias[i])-Promedio),2);
+    }
+    desviacionE = sqrt(suma/double(Distancias.size()-1.0));
+        
+    cout<<"Standard Deviation: "<<desviacionE<<"\n";   
+}
+
+
+vector<int> Solver::solve(string Dataset, int chromosomeSize, int minimumDistance, 
                           int skipValue, int maxGenerations, int topPopulation,
                           int crossoverPopulation, double mutateProbabilty,
                           double alpha, double beta) {
@@ -399,10 +497,12 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
     //Agregado
     topPopulation = this->populationSize;
     maxGenerations = this->generationsNumber;
+    Dataset = this->Dataset;
+
     //cout<<"Poblacion size "<<topPopulation;
     //cout<<"Generaciones number "<<maxGenerations;
+    //cout<<"Nombre del dataset "<<Dataset;
     
-
     if (chromosomeSize == -1)
         chromosomeSize = burninglength - 3;
 
@@ -429,6 +529,7 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
 
 
     // Aqui se termina la creacion de la poblacion, generacion 0
+
     //AQUI ES PARA IMPRIMIR TAMANO DE LA POBLACION, E IMPRIMIR FITNESS Y CROMOSOMA DE CADA INDIVIDUO DE LA POBLACION
     /*cout<<"Tamano de la poblacion: ";
     cout<<population[0].size()<<endl;
@@ -447,48 +548,20 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
             cout << endl;
     }*/
 
-    vector <int> BNrecolectados;
-    /*Para checar los burning sequence de los individuos es valido*/
-    for (int i = 0; i < population[0].size(); i++)
-    {
-        vector <int> cromosomaIndi = population[0][i].second; //Vector donde se guarda el cromosoma de cada individuo
-        vector <int>optimaSolution; //Vector donde se guarda la secuencia optima de cada individup
-        Checker checar("crocodile.csv"); 
-
-        if (checar.check(cromosomaIndi, 0)){ //Si el burning sequence del individuo es valido
-            //cout << "valido" << endl;//Se imprime que si es valido
-            //Vemos cual es el burning number del individuo
-            for (int i = 0; i <cromosomaIndi.size(); i++)
-            {
-                optimaSolution.push_back(cromosomaIndi[i]);
-                if (checar.check(optimaSolution, 0))
-                {      
-                    //cout << BOLD(FGRN("Verified!")) << endl;
-                    break;
-                }
-            }
-            BNrecolectados.push_back(optimaSolution.size());
-
-        }else{//Si el burning sequence del individuo no es valido
-            //cout << "no valido" << endl;
-        }  
-    }
-
-    //Imprimimos los burning number recolectados de esa poblacion
-    cout<<"Population burning numbers:\n";
-    for (auto bn :BNrecolectados){
-        cout<<bn<<" ";
-    }
+    //VEMOS SI SON VALIDAS LAS BURNING SEQUENCES DE LOS INDIVIDUOS, SI SON VALIDAS BUSCAMOS SEQUENCES OPTIMAS-> POR LO TANTO SU BURNING NUMBER
+    getBurningNumbers(Dataset, 0);
     
     for (int generation = 0; generation < maxGenerations; generation++) {
         sort(population[generation].begin(), population[generation].end());
         population[generation].erase(unique(population[generation].begin(), population[generation].end()), population[generation].end());
         
         //cout<<"Generation: "<<generation<<endl;
-
-        if (population[generation][0].first == 0)
-            return bestBurningSequence;
-
+        
+        //Para que se ejecuten todas las generaciones
+        // if (population[generation][0].first == 0){
+        //     cout<<"Tamano P " <<population[generation].size();
+        //     return bestBurningSequence;
+        // }
         if (population[generation][0].first == INF)
             skipValue += 10;
 
@@ -503,10 +576,10 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
         for (int i = 0; i < topPopulation; i++)
             fitnessSum += population[generation][i].first;
 
-        cout << "#" << generation + 1 << ": " << endl;
-        for (int i = 0; i < 10; i++)
-            cout << population[generation][i].first << " ";
-        cout << endl;
+        //cout << "#" << generation + 1 << ": " << endl;
+        //for (int i = 0; i < 10; i++)
+            //cout << population[generation][i].first << " ";
+        //cout << endl;
 
  
         for (int i = 0; i < topPopulation; i++)
@@ -530,7 +603,9 @@ vector<int> Solver::solve(int chromosomeSize, int minimumDistance,
         }
   
     }
-    
+
+    //VEMOS SI SON VALIDAS LAS BURNING SEQUENCES DE LOS INDIVIDUOS, SI SON VALIDAS BUSCAMOS SEQUENCES OPTIMAS-> POR LO TANTO SU BURNING NUMBER
+    getBurningNumbers(Dataset, maxGenerations);
 
     return bestBurningSequence;
 }

@@ -12,10 +12,12 @@ int32_t main(int argc, char **argv)
     // Agregado
     int populationSize = strtol(argv[3], NULL, 10);
     int numberGenerations = strtol(argv[4], NULL, 10);
+
     vector<int> optSolution;
 
     Solver G1(fileName, b, populationSize, numberGenerations);
 
+    //Calculamos el tiempo de ejecucion
     auto inicioReloj = high_resolution_clock::now();
 
     vector<int> solution = G1.solve();
@@ -23,7 +25,7 @@ int32_t main(int argc, char **argv)
     auto finReloj = high_resolution_clock::now();
 
     duration<double> duracionEjecucion = (finReloj - inicioReloj);
-    cout << "Tiempo de ejecución: " << duracionEjecucion.count() << "\n";
+    cout << "Execution time: " << duracionEjecucion.count() << "\n";
 
     // Esto imprime la solucion larga
     for (auto node : solution)
@@ -37,7 +39,7 @@ int32_t main(int argc, char **argv)
         for (int i = 0; i <solution.size(); i++)
         {
             optSolution.push_back(solution[i]);
-            if (checkG1.check(optSolution, 0))
+            if (checkG1.check(optSolution, 0))//Verificamos hasta cuando es una secuencia valida
             {      
                 //cout << BOLD(FGRN("Verified!")) << endl;
                 break;
@@ -57,8 +59,6 @@ int32_t main(int argc, char **argv)
     {
         cout << BOLD(FRED("NOT Verified!")) << endl;
     }
-
-    
 
     /*//Guardar valores en un archivo
     ofstream archivo("Dimension30.txt");
