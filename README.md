@@ -1,4 +1,5 @@
-**Note:** This is a fork of the original CBAG repository
+**Note:** =This repository is a fork of the original CBAG project.
+
 # CBAG: state-of-the-art algorithm for Graph Burning
 Official implementation of Centrality BAsed Genetic-algorithm ([CBAG](https://arxiv.org/abs/2208.01008)): state-of-the-art heuristic for solving the graph burning problem.
 
